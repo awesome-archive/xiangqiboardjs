@@ -14,8 +14,8 @@ You can integrate xiangqiboard.js with the <a href="https://github.com/lengyanyu
 // NOTE: this example uses the xiangqi.js library:
 // https://github.com/lengyanyu258/xiangqi.js
 
-const board = null;
-const game = new Xiangqi();
+let board = null;
+let game = new Xiangqi();
 
 function onDragStart (source, piece, position, orientation) {
   // do not pick up pieces if the game is over
@@ -26,19 +26,19 @@ function onDragStart (source, piece, position, orientation) {
 }
 
 function makeRandomMove () {
-  const possibleMoves = game.moves();
+  let possibleMoves = game.moves();
 
   // game over
   if (possibleMoves.length === 0) return;
 
-  const randomIdx = Math.floor(Math.random() * possibleMoves.length);
+  let randomIdx = Math.floor(Math.random() * possibleMoves.length);
   game.move(possibleMoves[randomIdx]);
   board.position(game.fen());
 }
 
 function onDrop (source, target) {
   // see if the move is legal
-  const move = game.move({
+  let move = game.move({
     from: source,
     to: target,
     promotion: 'q' // NOTE: always promote to a queen for example simplicity
@@ -57,7 +57,7 @@ function onSnapEnd () {
   board.position(game.fen());
 }
 
-const config = {
+let config = {
   draggable: true,
   position: 'start',
   onDragStart: onDragStart,

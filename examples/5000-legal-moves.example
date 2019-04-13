@@ -20,11 +20,11 @@ You can integrate xiangqiboard.js with the <a href="https://github.com/lengyanyu
 // NOTE: this example uses the xiangqi.js library:
 // https://github.com/lengyanyu258/xiangqi.js
 
-const board = null;
-const game = new Xiangqi();
-const $status = $('#status');
-const $fen = $('#fen');
-const $pgn = $('#pgn');
+let board = null;
+let game = new Xiangqi();
+let $status = $('#status');
+let $fen = $('#fen');
+let $pgn = $('#pgn');
 
 function onDragStart (source, piece, position, orientation) {
   // do not pick up pieces if the game is over
@@ -39,7 +39,7 @@ function onDragStart (source, piece, position, orientation) {
 
 function onDrop (source, target) {
   // see if the move is legal
-  const move = game.move({
+  let move = game.move({
     from: source,
     to: target,
     promotion: 'q' // NOTE: always promote to a queen for example simplicity
@@ -58,9 +58,9 @@ function onSnapEnd () {
 }
 
 function updateStatus () {
-  const status = '';
+  let status = '';
 
-  const moveColor = 'Red';
+  let moveColor = 'Red';
   if (game.turn() === 'b') {
     moveColor = 'Black';
   }
@@ -90,7 +90,7 @@ function updateStatus () {
   $pgn.html(game.pgn());
 }
 
-const config = {
+let config = {
   draggable: true,
   position: 'start',
   onDragStart: onDragStart,

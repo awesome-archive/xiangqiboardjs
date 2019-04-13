@@ -2,7 +2,7 @@
   "name": "xiangqiboard",
   "author": "@lengyanyu258 <lengyanyu258@outlook.com>",
   "description": "JavaScript xiangqiboard widget",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/lengyanyu258/xiangqiboardjs.git"

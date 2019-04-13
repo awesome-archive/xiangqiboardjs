@@ -14,16 +14,16 @@ Who will win in this riveting game of <code class="js plain">Math.random()</code
 // NOTE: this example uses the xiangqi.js library:
 // https://github.com/lengyanyu258/xiangqi.js
 
-const board = null;
-const game = new Xiangqi();
+let board = null;
+let game = new Xiangqi();
 
 function makeRandomMove () {
-  const possibleMoves = game.moves();
+  let possibleMoves = game.moves();
 
   // exit if the game is over
   if (game.game_over()) return;
 
-  const randomIdx = Math.floor(Math.random() * possibleMoves.length);
+  let randomIdx = Math.floor(Math.random() * possibleMoves.length);
   game.move(possibleMoves[randomIdx]);
   board.position(game.fen());
 

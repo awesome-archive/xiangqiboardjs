@@ -1,14 +1,15 @@
 [
 "-----------------------------------------------------------------",
 {
-  "released":false,
-  "version":"0.1.1",
-  "date":"22 Aug 2018",
+  "released":true,
+  "version":"0.2.0",
+  "date":"14 Apr 2019",
   "changes":[
-    ""
+    "Removed unnecessary square color",
+    "xiangqi.js integration examples"
   ],
   "files":[
-    {}
+    { "name":"xiangqiboardjs-0.2.0.zip", "size":"76.7 kB" }
   ]
 },
 "-----------------------------------------------------------------",

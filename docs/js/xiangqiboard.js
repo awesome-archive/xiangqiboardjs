@@ -1,5 +1,5 @@
 /* @license
- * xiangqiboard.js v@VERSION
+ * xiangqiboard.js v0.2.0
  * https://github.com/lengyanyu258/xiangqiboardjs/
  *
  * Copyright (c) 2017, Chris Oakman
@@ -12,33 +12,32 @@
 ;(function () {
   'use strict'
 
-  const $ = window['jQuery']
+  var $ = window['jQuery']
 
   // ---------------------------------------------------------------------------
   // Constants
   // ---------------------------------------------------------------------------
 
-  const ROW_TOP = 9
-  const ROW_LOW = 0
-  const ROW_LENGTH = ROW_TOP - ROW_LOW + 1
-  const COLUMNS = Object.freeze('abcdefghi'.split(''))
-  const DEFAULT_DRAG_THROTTLE_RATE = 20
-  const ELLIPSIS = '...'
-  const MINIMUM_JQUERY_VERSION = '1.8.3'
-  const RUN_ASSERTS = true
-  const START_FEN = 'rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR'
-  const START_POSITION = fenToObj(START_FEN)
+  var ROW_TOP = 9
+  var ROW_LOW = 0
+  var ROW_LENGTH = ROW_TOP - ROW_LOW + 1
+  var COLUMNS = Object.freeze('abcdefghi'.split(''))
+  var DEFAULT_DRAG_THROTTLE_RATE = 20
+  var ELLIPSIS = '...'
+  var MINIMUM_JQUERY_VERSION = '1.8.3'
+  var START_FEN = 'rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR'
+  var START_POSITION = fenToObj(START_FEN)
 
   // default animation speeds
-  const DEFAULT_APPEAR_SPEED = 200
-  const DEFAULT_MOVE_SPEED = 200
-  const DEFAULT_SNAPBACK_SPEED = 60
-  const DEFAULT_SNAP_SPEED = 30
-  const DEFAULT_TRASH_SPEED = 100
+  var DEFAULT_APPEAR_SPEED = 200
+  var DEFAULT_MOVE_SPEED = 200
+  var DEFAULT_SNAPBACK_SPEED = 60
+  var DEFAULT_SNAP_SPEED = 30
+  var DEFAULT_TRASH_SPEED = 100
 
   // use unique class names to prevent clashing with anything else on the page and simplify selectors
   // NOTE: these should never change
-  const CSS = Object.freeze({
+  var CSS = Object.freeze({
     clearfix: 'clearfix-5f3b5',
     board: 'board-1ef78',
     square: 'square-2b8ce',
@@ -60,11 +59,11 @@
   // ---------------------------------------------------------------------------
 
   function throttle (f, interval, scope) {
-    let timeout = 0
-    let shouldFire = false
-    let args = []
+    var timeout = 0
+    var shouldFire = false
+    var args = []
 
-    const handleTimeout = function () {
+    var handleTimeout = function () {
       timeout = 0
       if (shouldFire) {
         shouldFire = false
@@ -72,7 +71,7 @@
       }
     }
 
-    const fire = function () {
+    var fire = function () {
       timeout = window.setTimeout(handleTimeout, interval)
       f.apply(scope, args)
     }
@@ -100,7 +99,7 @@
 
   function uuid () {
     return 'xxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxx'.replace(/x/g, function (c) {
-      const r = (Math.random() * 16) | 0
+      var r = (Math.random() * 16) | 0
       return r.toString(16)
     })
   }
@@ -110,7 +109,7 @@
   }
 
   function parseSemVer (version) {
-    const tmp = version.split('.')
+    var tmp = version.split('.')
     return {
       major: parseInt(tmp[0], 10),
       minor: parseInt(tmp[1], 10),
@@ -123,10 +122,10 @@
     version = parseSemVer(version)
     minimum = parseSemVer(minimum)
 
-    const versionNum = (version.major * 100000 * 100000) +
+    var versionNum = (version.major * 100000 * 100000) +
                        (version.minor * 100000) +
                         version.patch
-    const minimumNum = (minimum.major * 100000 * 100000) +
+    var minimumNum = (minimum.major * 100000 * 100000) +
                        (minimum.minor * 100000) +
                         minimum.patch
 
@@ -134,24 +133,15 @@
   }
 
   function interpolateTemplate (str, obj) {
-    for (const key in obj) {
+    for (var key in obj) {
       if (!obj.hasOwnProperty(key)) continue
-      const keyTemplateStr = '{' + key + '}'
-      const value = obj[key]
+      var keyTemplateStr = '{' + key + '}'
+      var value = obj[key]
       while (str.indexOf(keyTemplateStr) !== -1) {
         str = str.replace(keyTemplateStr, value)
       }
     }
     return str
-  }
-
-  if (RUN_ASSERTS) {
-    console.assert(interpolateTemplate('abc', {a: 'x'}) === 'abc')
-    console.assert(interpolateTemplate('{a}bc', {}) === '{a}bc')
-    console.assert(interpolateTemplate('{a}bc', {p: 'q'}) === '{a}bc')
-    console.assert(interpolateTemplate('{a}bc', {a: 'x'}) === 'xbc')
-    console.assert(interpolateTemplate('{a}bc{a}bc', {a: 'x'}) === 'xbcxbc')
-    console.assert(interpolateTemplate('{a}{a}{b}', {a: 'x', b: 'y'}) === 'xxy')
   }
 
   // ---------------------------------------------------------------------------
@@ -188,7 +178,7 @@
     if (!isString(move)) return false
 
     // move should be in the form of "e2-e4", "f6-d5"
-    const squares = move.split('-')
+    var squares = move.split('-')
     if (squares.length !== 2) return false
 
     return validSquare(squares[0]) && validSquare(squares[1])
@@ -198,17 +188,6 @@
     return isString(square) && square.search(/^[a-i][0-9]$/) !== -1
   }
 
-  if (RUN_ASSERTS) {
-    console.assert(validSquare('a1'))
-    console.assert(validSquare('e2'))
-    console.assert(validSquare('g9'))
-    console.assert(!validSquare('D2'))
-    console.assert(!validSquare('a'))
-    console.assert(!validSquare(true))
-    console.assert(!validSquare(null))
-    console.assert(!validSquare({}))
-  }
-
   function validPieceCode (code) {
     // TODO: Compatible with other representations:
     // r and w both represent the red side
@@ -216,19 +195,6 @@
     // Bishop, Elephant and Minister are equal,
     // Horse and Knight represent the same
     return isString(code) && code.search(/^[br][KABNRCP]$/) !== -1
-  }
-
-  if (RUN_ASSERTS) {
-    console.assert(validPieceCode('bP'))
-    console.assert(validPieceCode('bK'))
-    console.assert(validPieceCode('rK'))
-    console.assert(validPieceCode('rR'))
-    console.assert(!validPieceCode('RR'))
-    console.assert(!validPieceCode('Rr'))
-    console.assert(!validPieceCode('a'))
-    console.assert(!validPieceCode(true))
-    console.assert(!validPieceCode(null))
-    console.assert(!validPieceCode({}))
   }
 
   function validFen (fen) {
@@ -242,11 +208,11 @@
     fen = expandFenEmptySquares(fen)
 
     // FEN should be ROW_LENGTH sections separated by slashes
-    const chunks = fen.split('/')
+    var chunks = fen.split('/')
     if (chunks.length !== ROW_LENGTH) return false
 
     // check each section
-    for (let i = 0; i < ROW_LENGTH; i++) {
+    for (var i = 0; i < ROW_LENGTH; i++) {
       if (chunks[i].length !== COLUMNS.length ||
           chunks[i].search(/[^kabnrcpKABNRCP1]/) !== -1) {
         return false
@@ -256,24 +222,10 @@
     return true
   }
 
-  if (RUN_ASSERTS) {
-    console.assert(validFen(START_FEN))
-    console.assert(validFen('9/9/9/9/9/9/9/9/9/9'))
-    console.assert(validFen('r1bakab1r/9/1cn2cn2/p1p1p1p1p/9/9/P1P1P1P1P/1C2C1N2/9/RNBAKABR1'))
-    console.assert(validFen('rnbakabnr/9/1c2c4/p1p1C1p1p/9/9/P1P1P1P1P/1C7/9/RNBAKABNR b - - 0 2'))
-    console.assert(!validFen('rnbakabnz/9/1c2c4/p1p1C1p1p/9/9/P1P1P1P1P/1C7/9/RNBAKABNR b - - 0 2'))
-    console.assert(!validFen('anbrkqbnr/9/9/9/9/9/P1P1P1P1P/9/9/9'))
-    console.assert(!validFen('rnbakabnr/p1p1p1p1p/9/9/9/9/P1P1P1P1P/'))
-    console.assert(!validFen('rnbakabnr/p1p1p1p1p/9/9/9/9/P1P1P1P1P/RNBAKABN'))
-    console.assert(!validFen('999999/p1p1p1p1p/9/9/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR'))
-    console.assert(!validFen('rnbakabnr/p1p1p1p1p/74/9/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR'))
-    console.assert(!validFen({}))
-  }
-
   function validPositionObject (pos) {
     if (!$.isPlainObject(pos)) return false
 
-    for (const i in pos) {
+    for (var i in pos) {
       if (!pos.hasOwnProperty(i)) continue
 
       if (!validSquare(i) || !validPieceCode(pos[i])) {
@@ -282,18 +234,6 @@
     }
 
     return true
-  }
-
-  if (RUN_ASSERTS) {
-    console.assert(validPositionObject(START_POSITION))
-    console.assert(validPositionObject({}))
-    console.assert(validPositionObject({e2: 'rP'}))
-    console.assert(validPositionObject({e2: 'rP', d2: 'rP'}))
-    console.assert(!validPositionObject({e2: 'BP'}))
-    console.assert(!validPositionObject({y2: 'rP'}))
-    console.assert(!validPositionObject(null))
-    console.assert(!validPositionObject('start'))
-    console.assert(!validPositionObject(START_FEN))
   }
 
   function isTouchDevice () {
@@ -324,7 +264,7 @@
 
   // convert bP, rK, etc code to FEN structure
   function pieceCodeToFen (piece) {
-    const pieceCodeLetters = piece.split('')
+    var pieceCodeLetters = piece.split('')
 
     // black piece
     if (pieceCodeLetters[0] === 'b') {
@@ -344,23 +284,23 @@
     // we're only interested in position information
     fen = fen.replace(/ .+$/, '')
 
-    const rows = fen.split('/')
-    const position = {}
+    var rows = fen.split('/')
+    var position = {}
 
-    let currentRow = ROW_TOP
-    for (let i = 0; i < ROW_LENGTH; i++) {
-      const row = rows[i].split('')
-      let colIdx = 0
+    var currentRow = ROW_TOP
+    for (var i = 0; i < ROW_LENGTH; i++) {
+      var row = rows[i].split('')
+      var colIdx = 0
 
       // loop through each character in the FEN section
-      for (let j = 0; j < row.length; j++) {
+      for (var j = 0; j < row.length; j++) {
         // number / empty squares
         if (row[j].search(/[1-9]/) !== -1) {
-          const numEmptySquares = parseInt(row[j], 10)
+          var numEmptySquares = parseInt(row[j], 10)
           colIdx = colIdx + numEmptySquares
         } else {
           // piece
-          const square = COLUMNS[colIdx] + currentRow
+          var square = COLUMNS[colIdx] + currentRow
           position[square] = fenToPieceCode(row[j])
           colIdx = colIdx + 1
         }
@@ -377,12 +317,12 @@
   function objToFen (obj) {
     if (!validPositionObject(obj)) return false
 
-    let fen = ''
+    var fen = ''
 
-    let currentRow = ROW_TOP
-    for (let i = 0; i < ROW_LENGTH; i++) {
-      for (let j = 0; j < COLUMNS.length; j++) {
-        const square = COLUMNS[j] + currentRow
+    var currentRow = ROW_TOP
+    for (var i = 0; i < ROW_LENGTH; i++) {
+      for (var j = 0; j < COLUMNS.length; j++) {
+        var square = COLUMNS[j] + currentRow
 
         // piece exists
         if (obj.hasOwnProperty(square)) {
@@ -404,12 +344,6 @@
     fen = squeezeFenEmptySquares(fen)
 
     return fen
-  }
-
-  if (RUN_ASSERTS) {
-    console.assert(objToFen(START_POSITION) === START_FEN)
-    console.assert(objToFen({}) === '9/9/9/9/9/9/9/9/9/9')
-    console.assert(objToFen({a2: 'rP', 'b2': 'bP'}) === '9/9/9/9/9/9/9/Pp7/9/9')
   }
 
   function squeezeFenEmptySquares (fen) {
@@ -436,16 +370,16 @@
 
   // returns the distance between two squares
   function squareDistance (squareA, squareB) {
-    const squareAArray = squareA.split('')
-    const squareAx = COLUMNS.indexOf(squareAArray[0]) + 1
-    const squareAy = parseInt(squareAArray[1], 10)
+    var squareAArray = squareA.split('')
+    var squareAx = COLUMNS.indexOf(squareAArray[0]) + 1
+    var squareAy = parseInt(squareAArray[1], 10)
 
-    const squareBArray = squareB.split('')
-    const squareBx = COLUMNS.indexOf(squareBArray[0]) + 1
-    const squareBy = parseInt(squareBArray[1], 10)
+    var squareBArray = squareB.split('')
+    var squareBx = COLUMNS.indexOf(squareBArray[0]) + 1
+    var squareBy = parseInt(squareBArray[1], 10)
 
-    const xDelta = Math.abs(squareAx - squareBx)
-    const yDelta = Math.abs(squareAy - squareBy)
+    var xDelta = Math.abs(squareAx - squareBx)
+    var yDelta = Math.abs(squareAy - squareBy)
 
     if (xDelta >= yDelta) return xDelta
     return yDelta
@@ -455,11 +389,11 @@
   // returns false if no instance of piece is found in position
   function findClosestPiece (position, piece, square) {
     // create array of closest squares from square
-    const closestSquares = createRadius(square)
+    var closestSquares = createRadius(square)
 
     // search through the position in order of distance for the piece
-    for (let i = 0; i < closestSquares.length; i++) {
-      const s = closestSquares[i]
+    for (var i = 0; i < closestSquares.length; i++) {
+      var s = closestSquares[i]
 
       if (position.hasOwnProperty(s) && position[s] === piece) {
         return s
@@ -471,12 +405,12 @@
 
   // returns an array of closest squares from square
   function createRadius (square) {
-    const squares = []
+    var squares = []
 
     // calculate distance of all squares
-    for (let i = 0; i < COLUMNS.length; i++) {
-      for (let j = 0; j < ROW_LENGTH; j++) {
-        const s = COLUMNS[i] + j
+    for (var i = 0; i < COLUMNS.length; i++) {
+      for (var j = 0; j < ROW_LENGTH; j++) {
+        var s = COLUMNS[i] + j
 
         // skip the square we're starting from
         if (square === s) continue
@@ -494,8 +428,8 @@
     })
 
     // just return the square code
-    const surroundingSquares = []
-    for (let i = 0; i < squares.length; i++) {
+    var surroundingSquares = []
+    for (var i = 0; i < squares.length; i++) {
       surroundingSquares.push(squares[i].square)
     }
 
@@ -505,15 +439,15 @@
   // given a position and a set of moves, return a new position
   // with the moves executed
   function calculatePositionFromMoves (position, moves) {
-    const newPosition = deepCopy(position)
+    var newPosition = deepCopy(position)
 
-    for (const i in moves) {
+    for (var i in moves) {
       if (!moves.hasOwnProperty(i)) continue
 
       // skip the move if the position doesn't have a piece on the source square
       if (!newPosition.hasOwnProperty(i)) continue
 
-      const piece = newPosition[i]
+      var piece = newPosition[i]
       delete newPosition[i]
       newPosition[moves[i]] = piece
     }
@@ -528,7 +462,7 @@
   // ---------------------------------------------------------------------------
 
   function buildContainerHTML (hasSparePieces) {
-    let html = '<div class="{xiangqiboard}">'
+    var html = '<div class="{xiangqiboard}">'
 
     if (hasSparePieces) {
       html += '<div class="{sparePieces} {sparePiecesTop}"></div>'
@@ -615,7 +549,7 @@
   // check for a compatible version of jQuery
   function checkJQuery () {
     if (!validJQueryVersion()) {
-      const errorMsg = 'Xiangqiboard Error 1005: Unable to find a valid version of jQuery. ' +
+      var errorMsg = 'Xiangqiboard Error 1005: Unable to find a valid version of jQuery. ' +
         'Please include jQuery ' + MINIMUM_JQUERY_VERSION + ' or higher on the page' +
         '\n\n' +
         'Exiting' + ELLIPSIS
@@ -629,7 +563,7 @@
   // return either boolean false or the $container element
   function checkContainerArg (containerElOrString) {
     if (containerElOrString === '') {
-      const errorMsg1 = 'Xiangqiboard Error 1001: ' +
+      var errorMsg1 = 'Xiangqiboard Error 1001: ' +
         'The first argument to Xiangqiboard() cannot be an empty string.' +
         '\n\n' +
         'Exiting' + ELLIPSIS
@@ -644,9 +578,9 @@
     }
 
     // containerEl must be something that becomes a jQuery collection of size 1
-    const $container = $(containerElOrString)
+    var $container = $(containerElOrString)
     if ($container.length !== 1) {
-      const errorMsg2 = 'Xiangqiboard Error 1003: ' +
+      var errorMsg2 = 'Xiangqiboard Error 1003: ' +
         'The first argument to Xiangqiboard() must be the ID of a DOM node, ' +
         'an ID query selector, or a single DOM node.' +
         '\n\n' +
@@ -670,7 +604,7 @@
     if (!checkJQuery()) {
       return null
     }
-    let $container = checkContainerArg(containerElOrString)
+    var $container = checkContainerArg(containerElOrString)
     if (!$container) {
       return null
     }
@@ -680,29 +614,29 @@
     config = expandConfig(config)
 
     // DOM elements
-    let $board = null
-    let $draggedPiece = null
-    let $sparePiecesTop = null
-    let $sparePiecesBottom = null
+    var $board = null
+    var $draggedPiece = null
+    var $sparePiecesTop = null
+    var $sparePiecesBottom = null
 
     // constructor return object
-    const widget = {}
+    var widget = {}
 
     // -------------------------------------------------------------------------
     // Stateful
     // -------------------------------------------------------------------------
 
-    let boardBorderSize = 2
-    let currentOrientation = 'red'
-    let currentPosition = {}
-    let draggedPiece = null
-    let draggedPieceLocation = null
-    let draggedPieceSource = null
-    let isDragging = false
-    const sparePiecesElsIds = {}
-    const squareElsIds = {}
-    let squareElsOffsets = {}
-    let squareSize = 16
+    var boardBorderSize = 2
+    var currentOrientation = 'red'
+    var currentPosition = {}
+    var draggedPiece = null
+    var draggedPieceLocation = null
+    var draggedPieceSource = null
+    var isDragging = false
+    var sparePiecesElsIds = {}
+    var squareElsIds = {}
+    var squareElsOffsets = {}
+    var squareSize = 16
 
     // -------------------------------------------------------------------------
     // Validation / Errors
@@ -717,7 +651,7 @@
         return
       }
 
-      let errorText = 'Xiangqiboard Error ' + code + ': ' + msg
+      var errorText = 'Xiangqiboard Error ' + code + ': ' + msg
 
         // print to console
       if (
@@ -773,12 +707,12 @@
     // -------------------------------------------------------------------------
 
     // calculates square size based on the width of the container
-    // got a little CSS black magic here, so let me explain:
+    // got a little CSS black magic here, so var me explain:
     // get the width of the container element (could be anything), reduce by 1 for
     // fudge factor, and then keep reducing until we find an exact mod COLUMNS.length for
     // our square size
     function calculateSquareSize () {
-      let containerWidth = parseInt($container.width(), 10)
+      var containerWidth = parseInt($container.width(), 10)
 
       // defensive, prevent infinite loop
       if (!containerWidth || containerWidth <= 0) {
@@ -786,7 +720,7 @@
       }
 
       // pad one pixel
-      let boardWidth = containerWidth - 1
+      var boardWidth = containerWidth - 1
 
       while (boardWidth % COLUMNS.length !== 0 && boardWidth > 0) {
         boardWidth = boardWidth - 1
@@ -798,18 +732,18 @@
     // create random IDs for elements
     function createElIds () {
       // squares on the board
-      for (let i = 0; i < COLUMNS.length; i++) {
-        for (let j = ROW_LOW; j <= ROW_TOP; j++) {
-          const square = COLUMNS[i] + j
+      for (var i = 0; i < COLUMNS.length; i++) {
+        for (var j = ROW_LOW; j <= ROW_TOP; j++) {
+          var square = COLUMNS[i] + j
           squareElsIds[square] = square + '-' + uuid()
         }
       }
 
       // spare pieces
-      const pieces = 'KABNRCP'.split('')
-      for (let i = 0; i < pieces.length; i++) {
-        const whitePiece = 'r' + pieces[i]
-        const blackPiece = 'b' + pieces[i]
+      var pieces = 'KABNRCP'.split('')
+      for (var i = 0; i < pieces.length; i++) {
+        var whitePiece = 'r' + pieces[i]
+        var blackPiece = 'b' + pieces[i]
         sparePiecesElsIds[whitePiece] = whitePiece + '-' + uuid()
         sparePiecesElsIds[blackPiece] = blackPiece + '-' + uuid()
       }
@@ -824,20 +758,20 @@
         orientation = 'red'
       }
 
-      let html = ''
+      var html = ''
 
       // algebraic notation / orientation
-      const alpha = deepCopy(COLUMNS)
-      let row = ROW_TOP
+      var alpha = deepCopy(COLUMNS)
+      var row = ROW_TOP
       if (orientation === 'black') {
         alpha.reverse()
         row = ROW_LOW
       }
 
-      for (let i = 0; i < ROW_LENGTH; i++) {
+      for (var i = 0; i < ROW_LENGTH; i++) {
         html += '<div class="{row}">'
-        for (let j = 0; j < COLUMNS.length; j++) {
-          const square = alpha[j] + row
+        for (var j = 0; j < COLUMNS.length; j++) {
+          var square = alpha[j] + row
 
           html += '<div class="{square} square-' + square + '" ' +
             'style="width:' + squareSize + 'px;height:' + squareSize + 'px;" ' +
@@ -876,7 +810,7 @@
         orientation = 'red'
       }
 
-      const css = {}
+      var css = {}
       css['background'] = 'url("' + config.boardTheme + '") no-repeat'
       css['background-size'] = '100%'
       if (orientation === 'black') {
@@ -896,7 +830,7 @@
     }
 
     function buildPieceHTML (piece, hidden, id) {
-      let html = '<img src="' + buildPieceImgSrc(piece) + '" '
+      var html = '<img src="' + buildPieceImgSrc(piece) + '" '
       if (isString(id) && id !== '') {
         html += 'id="' + id + '" '
       }
@@ -915,13 +849,13 @@
     }
 
     function buildSparePiecesHTML (color) {
-      let pieces = ['rK', 'rA', 'rB', 'rN', 'rR', 'rC', 'rP']
+      var pieces = ['rK', 'rA', 'rB', 'rN', 'rR', 'rC', 'rP']
       if (color === 'black') {
         pieces = ['bK', 'bA', 'bB', 'bN', 'bR', 'bC', 'bP']
       }
 
-      let html = ''
-      for (let i = 0; i < pieces.length; i++) {
+      var html = ''
+      for (var i = 0; i < pieces.length; i++) {
         html += buildPieceHTML(pieces[i], false, sparePiecesElsIds[pieces[i]])
       }
 
@@ -934,16 +868,16 @@
 
     function animateSquareToSquare (src, dest, piece, completeFn) {
       // get information about the source and destination squares
-      const $srcSquare = $('#' + squareElsIds[src])
-      const srcSquarePosition = $srcSquare.offset()
-      const $destSquare = $('#' + squareElsIds[dest])
-      const destSquarePosition = $destSquare.offset()
+      var $srcSquare = $('#' + squareElsIds[src])
+      var srcSquarePosition = $srcSquare.offset()
+      var $destSquare = $('#' + squareElsIds[dest])
+      var destSquarePosition = $destSquare.offset()
 
       // create the animated piece and absolutely position it
       // over the source square
-      const animatedPieceId = uuid()
+      var animatedPieceId = uuid()
       $('body').append(buildPieceHTML(piece, true, animatedPieceId))
-      const $animatedPiece = $('#' + animatedPieceId)
+      var $animatedPiece = $('#' + animatedPieceId)
       $animatedPiece.css({
         display: '',
         position: 'absolute',
@@ -968,7 +902,7 @@
       }
 
       // animate the piece to the destination square
-      const opts = {
+      var opts = {
         duration: config.moveSpeed,
         complete: onFinishAnimation1
       }
@@ -976,14 +910,14 @@
     }
 
     function animateSparePieceToSquare (piece, dest, completeFn) {
-      const srcOffset = $('#' + sparePiecesElsIds[piece]).offset()
-      const $destSquare = $('#' + squareElsIds[dest])
-      const destOffset = $destSquare.offset()
+      var srcOffset = $('#' + sparePiecesElsIds[piece]).offset()
+      var $destSquare = $('#' + squareElsIds[dest])
+      var destOffset = $destSquare.offset()
 
       // create the animate piece
-      const pieceId = uuid()
+      var pieceId = uuid()
       $('body').append(buildPieceHTML(piece, true, pieceId))
-      const $animatedPiece = $('#' + pieceId)
+      var $animatedPiece = $('#' + pieceId)
       $animatedPiece.css({
         display: '',
         position: 'absolute',
@@ -1007,7 +941,7 @@
       }
 
       // animate the piece to the destination square
-      const opts = {
+      var opts = {
         duration: config.moveSpeed,
         complete: onFinishAnimation2
       }
@@ -1018,7 +952,7 @@
     function doAnimations (animations, oldPos, newPos) {
       if (animations.length === 0) return
 
-      let numFinished = 0
+      var numFinished = 0
 
       function onFinishAnimation3 () {
         // exit if all the animations aren't finished
@@ -1033,8 +967,8 @@
         }
       }
 
-      for (let i = 0; i < animations.length; i++) {
-        const animation = animations[i]
+      for (var i = 0; i < animations.length; i++) {
+        var animation = animations[i]
 
         // clear a piece
         if (animation.type === 'clear') {
@@ -1066,11 +1000,11 @@
       pos1 = deepCopy(pos1)
       pos2 = deepCopy(pos2)
 
-      const animations = []
-      const squaresMovedTo = {}
+      var animations = []
+      var squaresMovedTo = {}
 
       // remove pieces that are the same in both positions
-      for (const i in pos2) {
+      for (var i in pos2) {
         if (!pos2.hasOwnProperty(i)) continue
 
         if (pos1.hasOwnProperty(i) && pos1[i] === pos2[i]) {
@@ -1080,10 +1014,10 @@
       }
 
       // find all the "move" animations
-      for (const i in pos2) {
+      for (var i in pos2) {
         if (!pos2.hasOwnProperty(i)) continue
 
-        const closestPiece = findClosestPiece(pos1, pos2[i], i)
+        var closestPiece = findClosestPiece(pos1, pos2[i], i)
         if (closestPiece) {
           animations.push({
             type: 'move',
@@ -1099,7 +1033,7 @@
       }
 
       // "add" animations
-      for (const i in pos2) {
+      for (var i in pos2) {
         if (!pos2.hasOwnProperty(i)) continue
 
         animations.push({
@@ -1112,7 +1046,7 @@
       }
 
       // "clear" animations
-      for (const i in pos1) {
+      for (var i in pos1) {
         if (!pos1.hasOwnProperty(i)) continue
 
         // do not clear a piece if it is on a square that is the result
@@ -1140,7 +1074,7 @@
       $board.find('.' + CSS.piece).remove()
 
       // add the pieces
-      for (const i in currentPosition) {
+      for (var i in currentPosition) {
         if (!currentPosition.hasOwnProperty(i)) continue
 
         $('#' + squareElsIds[i]).append(buildPieceHTML(currentPosition[i]))
@@ -1164,10 +1098,10 @@
     }
 
     function setCurrentPosition (position) {
-      const oldPos = deepCopy(currentPosition)
-      const newPos = deepCopy(position)
-      const oldFen = objToFen(oldPos)
-      const newFen = objToFen(newPos)
+      var oldPos = deepCopy(currentPosition)
+      var newPos = deepCopy(position)
+      var oldFen = objToFen(oldPos)
+      var newFen = objToFen(newPos)
 
       // do nothing if no change in position
       if (oldFen === newFen) return
@@ -1182,10 +1116,10 @@
     }
 
     function isXYOnSquare (x, y) {
-      for (const i in squareElsOffsets) {
+      for (var i in squareElsOffsets) {
         if (!squareElsOffsets.hasOwnProperty(i)) continue
 
-        const s = squareElsOffsets[i]
+        var s = squareElsOffsets[i]
         if (x >= s.left &&
             x < s.left + squareSize &&
             y >= s.top &&
@@ -1201,7 +1135,7 @@
     function captureSquareOffsets () {
       squareElsOffsets = {}
 
-      for (const i in squareElsIds) {
+      for (var i in squareElsIds) {
         if (!squareElsIds.hasOwnProperty(i)) continue
 
         squareElsOffsets[i] = $('#' + squareElsIds[i]).offset()
@@ -1240,10 +1174,10 @@
       }
 
       // get source square position
-      const sourceSquarePosition = $('#' + squareElsIds[draggedPieceSource]).offset()
+      var sourceSquarePosition = $('#' + squareElsIds[draggedPieceSource]).offset()
 
       // animate the piece to the target square
-      const opts = {
+      var opts = {
         duration: config.snapbackSpeed,
         complete: complete
       }
@@ -1257,7 +1191,7 @@
       removeSquareHighlights()
 
       // remove the source piece
-      const newPosition = deepCopy(currentPosition)
+      var newPosition = deepCopy(currentPosition)
       delete newPosition[draggedPieceSource]
       setCurrentPosition(newPosition)
 
@@ -1275,13 +1209,13 @@
       removeSquareHighlights()
 
       // update position
-      const newPosition = deepCopy(currentPosition)
+      var newPosition = deepCopy(currentPosition)
       delete newPosition[draggedPieceSource]
       newPosition[square] = draggedPiece
       setCurrentPosition(newPosition)
 
       // get target square information
-      const targetSquarePosition = $('#' + squareElsIds[square]).offset()
+      var targetSquarePosition = $('#' + squareElsIds[square]).offset()
 
       // animation complete
       function onAnimationComplete () {
@@ -1295,7 +1229,7 @@
       }
 
       // snap the piece to the target square
-      const opts = {
+      var opts = {
         duration: config.snapSpeed,
         complete: onAnimationComplete
       }
@@ -1353,7 +1287,7 @@
       })
 
       // get location
-      const location = isXYOnSquare(x, y)
+      var location = isXYOnSquare(x, y)
 
       // do nothing if the location has not changed
       if (location === draggedPieceLocation) return
@@ -1386,7 +1320,7 @@
 
     function stopDraggedPiece (location) {
       // determine what the action should be
-      let action = 'drop'
+      var action = 'drop'
       if (location === 'offboard' && config.dropOffBoard === 'snapback') {
         action = 'snapback'
       }
@@ -1396,7 +1330,7 @@
 
       // run their onDrop function, which can potentially change the drop action
       if (isFunction(config.onDrop)) {
-        const newPosition = deepCopy(currentPosition)
+        var newPosition = deepCopy(currentPosition)
 
         // source piece is a spare piece and position is off the board
         // if (draggedPieceSource === 'spare' && location === 'offboard') {...}
@@ -1421,9 +1355,9 @@
           newPosition[location] = draggedPiece
         }
 
-        const oldPosition = deepCopy(currentPosition)
+        var oldPosition = deepCopy(currentPosition)
 
-        const result = config.onDrop(
+        var result = config.onDrop(
             draggedPieceSource,
             location,
             draggedPiece,
@@ -1481,11 +1415,11 @@
       // no need to throw an error here; just do nothing or return the current position
       if (arguments.length === 0) return currentPosition
 
-      let useAnimation = true
+      var useAnimation = true
 
       // collect the moves into an object
-      const moves = {}
-      for (let i = 0; i < arguments.length; i++) {
+      var moves = {}
+      for (var i = 0; i < arguments.length; i++) {
         // any "false" to this function means no animations
         if (arguments[i] === false) {
           useAnimation = false
@@ -1498,12 +1432,12 @@
           continue
         }
 
-        const tmp = arguments[i].split('-')
+        var tmp = arguments[i].split('-')
         moves[tmp[0]] = tmp[1]
       }
 
       // calculate position from moves
-      const newPos = calculatePositionFromMoves(currentPosition, moves)
+      var newPos = calculatePositionFromMoves(currentPosition, moves)
 
       // update the board
       widget.position(newPos, useAnimation)
@@ -1566,7 +1500,7 @@
 
       if (useAnimation) {
         // start the animations
-        const animations = calculateAnimations(currentPosition, position)
+        var animations = calculateAnimations(currentPosition, position)
         doAnimations(animations, currentPosition, position)
 
         // set the new position
@@ -1620,7 +1554,7 @@
       if (!config.draggable) return
 
       // do nothing if there is no piece on this square
-      const square = $(this).attr('data-square')
+      var square = $(this).attr('data-square')
       if (!validSquare(square)) return
       if (!currentPosition.hasOwnProperty(square)) return
 
@@ -1632,7 +1566,7 @@
       if (!config.draggable) return
 
       // do nothing if there is no piece on this square
-      const square = $(this).attr('data-square')
+      var square = $(this).attr('data-square')
       if (!validSquare(square)) return
       if (!currentPosition.hasOwnProperty(square)) return
 
@@ -1649,7 +1583,7 @@
       // do nothing if sparePieces is not enabled
       if (!config.sparePieces) return
 
-      const piece = $(this).attr('data-piece')
+      var piece = $(this).attr('data-piece')
 
       beginDraggingPiece('spare', piece, evt.pageX, evt.pageY)
     }
@@ -1658,7 +1592,7 @@
       // do nothing if sparePieces is not enabled
       if (!config.sparePieces) return
 
-      const piece = $(this).attr('data-piece')
+      var piece = $(this).attr('data-piece')
 
       e = e.originalEvent
       beginDraggingPiece(
@@ -1675,7 +1609,7 @@
       }
     }
 
-    const throttledMousemoveWindow = throttle(mousemoveWindow, config.dragThrottleRate)
+    var throttledMousemoveWindow = throttle(mousemoveWindow, config.dragThrottleRate)
 
     function touchmoveWindow (evt) {
       // do nothing if we are not dragging a piece
@@ -1688,14 +1622,14 @@
                          evt.originalEvent.changedTouches[0].pageY)
     }
 
-    const throttledTouchmoveWindow = throttle(touchmoveWindow, config.dragThrottleRate)
+    var throttledTouchmoveWindow = throttle(touchmoveWindow, config.dragThrottleRate)
 
     function mouseupWindow (evt) {
       // do nothing if we are not dragging a piece
       if (!isDragging) return
 
       // get the location
-      const location = isXYOnSquare(evt.pageX, evt.pageY)
+      var location = isXYOnSquare(evt.pageX, evt.pageY)
 
       stopDraggedPiece(location)
     }
@@ -1705,7 +1639,7 @@
       if (!isDragging) return
 
       // get the location
-      const location = isXYOnSquare(evt.originalEvent.changedTouches[0].pageX,
+      var location = isXYOnSquare(evt.originalEvent.changedTouches[0].pageX,
                                     evt.originalEvent.changedTouches[0].pageY)
 
       stopDraggedPiece(location)
@@ -1720,13 +1654,13 @@
       if (!isFunction(config.onMouseoverSquare)) return
 
       // get the square
-      const square = $(evt.currentTarget).attr('data-square')
+      var square = $(evt.currentTarget).attr('data-square')
 
       // NOTE: this should never happen; defensive
       if (!validSquare(square)) return
 
       // get the piece on this square
-      let piece = false
+      var piece = false
       if (currentPosition.hasOwnProperty(square)) {
         piece = currentPosition[square]
       }
@@ -1744,13 +1678,13 @@
       if (!isFunction(config.onMouseoutSquare)) return
 
       // get the square
-      const square = $(evt.currentTarget).attr('data-square')
+      var square = $(evt.currentTarget).attr('data-square')
 
       // NOTE: this should never happen; defensive
       if (!validSquare(square)) return
 
       // get the piece on this square
-      let piece = false
+      var piece = false
       if (currentPosition.hasOwnProperty(square)) {
         piece = currentPosition[square]
       }
@@ -1777,7 +1711,7 @@
         .on('mouseleave', '.' + CSS.square, mouseleaveSquare)
 
       // piece drag
-      const $window = $(window)
+      var $window = $(window)
       $window
         .on('mousemove', throttledMousemoveWindow)
         .on('mouseup', mouseupWindow)
@@ -1806,7 +1740,7 @@
       }
 
       // create the drag piece
-      const draggedPieceId = uuid()
+      var draggedPieceId = uuid()
       $('body').append(buildPieceHTML('rP', true, draggedPieceId))
       $draggedPiece = $('#' + draggedPieceId)
 
