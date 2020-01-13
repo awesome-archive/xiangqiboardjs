@@ -8,30 +8,28 @@ Highlight Legal Moves
 Use the <code class="js plain"><a href="docs.html#config:onMouseoverSquare">onMouseoverSquare</a></code> and <code class="js plain"><a href="docs.html#config:onMouseoutSquare">onMouseoutSquare</a></code> events to highlight legal squares.
 
 ===== HTML
+<style type="text/css">
+.highlight {
+  box-shadow: inset 0 0 3px 3px white;
+}
+</style>
 <div id="myBoard" style="width: 450px"></div>
 
 ===== JS
 // NOTE: this example uses the xiangqi.js library:
 // https://github.com/lengyanyu258/xiangqi.js
 
-const board = null;
-const game = new Xiangqi();
-const redSquareGrey = '#a9a9a9';
-const blackSquareGrey = '#696969';
+let board = null;
+let game = new Xiangqi();
 
 function removeGreySquares () {
-  $('#myBoard .square-55d63').css('background', '');
+  $('#myBoard .square-2b8ce').removeClass('highlight');
 }
 
 function greySquare (square) {
-  const $square = $('#myBoard .square-' + square);
+  let $square = $('#myBoard .square-' + square);
 
-  const background = redSquareGrey
-  if ($square.hasClass('black-3c85d')) {
-    background = blackSquareGrey;
-  }
-
-  $square.css('background', background);
+  $square.addClass('highlight');
 }
 
 function onDragStart (source, piece) {
@@ -49,10 +47,9 @@ function onDrop (source, target) {
   removeGreySquares();
 
   // see if the move is legal
-  const move = game.move({
+  let move = game.move({
     from: source,
-    to: target,
-    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+    to: target
   });
 
   // illegal move
@@ -61,7 +58,7 @@ function onDrop (source, target) {
 
 function onMouseoverSquare (square, piece) {
   // get list of possible moves for this square
-  const moves = game.moves({
+  let moves = game.moves({
     square: square,
     verbose: true
   });
@@ -73,7 +70,7 @@ function onMouseoverSquare (square, piece) {
   greySquare(square);
 
   // highlight the possible squares for this piece
-  for (const i = 0; i < moves.length; i++) {
+  for (let i = 0; i < moves.length; i++) {
     greySquare(moves[i].to);
   }
 }
@@ -86,7 +83,7 @@ function onSnapEnd () {
   board.position(game.fen());
 }
 
-const config = {
+let config = {
   draggable: true,
   position: 'start',
   onDragStart: onDragStart,

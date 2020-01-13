@@ -9,7 +9,7 @@ Please see [xiangqiboardjs.com] for documentation and examples.
 xiangqiboard.js is a JavaScript xiangqiboard component with a flexible "just a
 board" API that
 
-xiangqiboard.js is a standalone JavaScript Chess Board. It is designed to be "just
+xiangqiboard.js is a standalone JavaScript Xiangqi Board. It is designed to be "just
 a board" and expose a powerful API so that it can be used in different ways.
 Here's a non-exhaustive list of things you can do with xiangqiboard.js:
 
@@ -30,11 +30,11 @@ The scope of xiangqiboard.js is limited to "just a board." This is intentional a
 makes xiangqiboard.js flexible for handling a multitude of xiangqi-related problems.
 
 Specifically, xiangqiboard.js does not understand anything about how the game of
-xiangqi is played: how a knight moves, who's turn is it, is White in check?, etc.
+xiangqi is played: how a knight moves, who's turn is it, is Red in check?, etc..
 
 Fortunately, the powerful [xiangqi.js] library deals with exactly this sort of
 problem domain and plays nicely with xiangqiboard.js's flexible API. Some examples
-of xiangqiboard.js combined with xiangqi.js: 5000, 5001, 5002
+of xiangqiboard.js combined with xiangqi.js: [5000], [5001], [5002].
 
 Please see the powerful [xiangqi.js] library for an API to deal with these sorts
 of questions.
@@ -68,4 +68,7 @@ xiangqiboard.js is released under the terms of the [MIT License].
 [xiangqiboardjs.com]:https://lengyanyu258.github.io/xiangqiboardjs/index.html
 [xiangqi.js]:https://github.com/lengyanyu258/xiangqi.js
 [Example 5000]:https://lengyanyu258.github.io/xiangqiboardjs/examples#5000
+[5000]:https://lengyanyu258.github.io/xiangqiboardjs/examples#5000
+[5001]:https://lengyanyu258.github.io/xiangqiboardjs/examples#5001
+[5002]:https://lengyanyu258.github.io/xiangqiboardjs/examples#5002
 [MIT License]:LICENSE.md

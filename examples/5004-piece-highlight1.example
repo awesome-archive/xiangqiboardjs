@@ -22,23 +22,23 @@ Use CSS to show piece highlighting.
 // NOTE: this example uses the xiangqi.js library:
 // https://github.com/lengyanyu258/xiangqi.js
 
-const board = null;
-const $board = $('#myBoard');
-const game = new Xiangqi();
-const squareClass = 'square-55d63'
-const squareToHighlight = null;
-const colorToHighlight = null;
+let board = null;
+let $board = $('#myBoard');
+let game = new Xiangqi();
+let squareClass = 'square-2b8ce'
+let squareToHighlight = null;
+let colorToHighlight = null;
 
 function makeRandomMove () {
-  const possibleMoves = game.moves({
+  let possibleMoves = game.moves({
     verbose: true
   });
 
   // exit if the game is over
   if (game.game_over()) return;
 
-  const randomIdx = Math.floor(Math.random() * possibleMoves.length);
-  const move = possibleMoves[randomIdx];
+  let randomIdx = Math.floor(Math.random() * possibleMoves.length);
+  let move = possibleMoves[randomIdx];
 
   if (move.color === 'r') {
     $board.find('.' + squareClass).removeClass('highlight-red');
@@ -52,7 +52,7 @@ function makeRandomMove () {
     colorToHighlight = 'black';
   }
 
-  game.move(possibleMoves[randomIdx].san);
+  game.move(possibleMoves[randomIdx].iccs);
   board.position(game.fen());
 
   window.setTimeout(makeRandomMove, 1200);
@@ -63,7 +63,7 @@ function onMoveEnd () {
     .addClass('highlight-' + colorToHighlight);
 }
 
-const config = {
+let config = {
   position: 'start',
   onMoveEnd: onMoveEnd
 };

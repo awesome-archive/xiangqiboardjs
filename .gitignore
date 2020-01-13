@@ -4,5 +4,6 @@
 .idea/
 node_modules/
 
-docs/releases/
-!docs/releases/**/*.zip
+docs/releases/**
+!docs/releases/*/
+!docs/releases/*/*.zip
